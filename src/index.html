@@ -11,13 +11,3 @@
   <app-root></app-root>
 </body>
 </html>
-
-<script>
-  // Check if we have a redirect parameter
-  (function() {
-    var redirect = location.search.match(/redirect=([^&]*)/);
-    if (redirect && redirect[1]) {
-      history.replaceState(null, null, '/hospitality-automation-hub/' + redirect[1]);
-    }
-  })();
-</script>
