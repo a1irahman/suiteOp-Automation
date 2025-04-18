@@ -13,6 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
+            "baseHref": "/suite-op-automation/",
             "outputPath": "dist/suite-op-automation",
             "index": "src/index.html",
             "main": "src/main.ts",
@@ -94,6 +95,9 @@
             ],
             "scripts": []
           }
+        },
+        "deploy": {
+          "builder": "angular-cli-ghpages:deploy"
         }
       }
     }
