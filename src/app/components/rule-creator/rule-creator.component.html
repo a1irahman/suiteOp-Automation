@@ -1,0 +1,265 @@
+<div class="p-grid">
+  <div class="p-col-12">
+    <p-card header="Create Automation Rule">
+      <!-- AI-Powered Rule Creation Section -->
+      <div class="p-mb-4">
+        <h3>Create Rule with Natural Language</h3>
+        <div class="p-field p-fluid">
+          <span class="p-float-label">
+            <textarea
+              id="aiInput"
+              pInputTextarea
+              [(ngModel)]="aiInputText"
+              [rows]="3"
+              placeholder="When a guest checks in, send a welcome email"></textarea>
+          </span>
+        </div>
+        <div class="p-mt-3 p-mb-3">
+          <button
+            pButton
+            label="Process with AI"
+            icon="pi pi-bolt"
+            [disabled]="!aiInputText.trim() || isProcessingAi"
+            (click)="processNaturalLanguage()"></button>
+          <p-progressSpinner *ngIf="isProcessingAi" styleClass="p-ml-2" [style]="{'width': '30px', 'height': '30px'}"></p-progressSpinner>
+        </div>
+
+        <!-- AI Rule Preview -->
+        <p-accordion *ngIf="aiGeneratedRule" [activeIndex]="0">
+          <p-accordionTab header="AI Generated Rule Preview">
+            <div class="p-mb-2">
+              <strong>Rule Name:</strong> {{aiGeneratedRule.name}}
+            </div>
+            <div class="p-mb-2">
+              <strong>Trigger:</strong> {{aiGeneratedRule.trigger?.description}} ({{aiGeneratedRule.trigger?.type}})
+            </div>
+            <div class="p-mb-2" *ngIf="aiGeneratedRule.actions && aiGeneratedRule.actions.length > 0">
+              <strong>Actions:</strong>
+              <ul>
+                <li *ngFor="let action of aiGeneratedRule.actions">
+                  {{action.type}}
+                  <span *ngIf="action.timing.type === 'immediate'">(Immediate)</span>
+                  <span *ngIf="action.timing.type === 'scheduled' && action.timing.delay">
+                    (After {{action.timing.delay}} minutes)
+                  </span>
+                  <span *ngIf="action.timing.type === 'scheduled' && action.timing.scheduledTime">
+                    (At {{action.timing.scheduledTime}})
+                  </span>
+                </li>
+              </ul>
+            </div>
+            <div class="p-mt-3">
+              <button
+                pButton
+                label="Apply This Rule"
+                icon="pi pi-check"
+                (click)="applyAiRule()"></button>
+            </div>
+          </p-accordionTab>
+        </p-accordion>
+      </div>
+
+      <p-divider></p-divider>
+
+      <!-- Manual Rule Creation Form -->
+      <form [formGroup]="ruleForm" (ngSubmit)="saveRule()">
+        <h3>Manual Rule Creation</h3>
+
+        <!-- Rule Name -->
+        <div class="p-field p-mb-3">
+          <label for="name">Rule Name</label>
+          <input id="name" type="text" pInputText formControlName="name" class="p-inputtext-lg" style="width: 100%"/>
+          <small class="p-error" *ngIf="ruleForm.get('name')?.invalid && ruleForm.get('name')?.touched">
+            Rule name is required
+          </small>
+        </div>
+
+        <!-- Trigger Selection -->
+        <div class="p-field p-mb-3" formGroupName="trigger">
+          <label for="triggerType">Trigger</label>
+          <p-dropdown
+            id="triggerType"
+            formControlName="type"
+            [options]="availableTriggers"
+            optionLabel="description"
+            optionValue="type"
+            placeholder="Select a trigger"
+            (onChange)="onTriggerTypeChange($event)"
+            styleClass="p-inputtext-lg"
+            [style]="{'width': '100%'}"></p-dropdown>
+          <small class="p-error" *ngIf="ruleForm.get('trigger.type')?.invalid && ruleForm.get('trigger.type')?.touched">
+            Trigger is required
+          </small>
+        </div>
+
+        <!-- Actions Section -->
+        <div formArrayName="actions">
+          <h4>Actions</h4>
+          <div *ngFor="let actionCtrl of actionsFormArray.controls; let i = index" class="p-mb-4">
+            <div [formGroupName]="i" class="p-p-3">
+              <div class="p-grid">
+                <div class="p-col-11">
+                  <h5>Action {{i + 1}}</h5>
+                </div>
+                <div class="p-col-1 p-text-right">
+                  <button
+                    pButton
+                    icon="pi pi-trash"
+                    class="p-button-danger p-button-text"
+                    [disabled]="actionsFormArray.length <= 1"
+                    (click)="removeAction(i)"
+                    type="button"></button>
+                </div>
+              </div>
+
+              <!-- Action Type -->
+              <div class="p-field p-mb-3">
+                <label>Action Type</label>
+                <p-dropdown
+                  formControlName="type"
+                  [options]="availableActions"
+                  optionLabel="description"
+                  optionValue="type"
+                  placeholder="Select an action"
+                  (onChange)="onActionTypeChange(i, $event)"
+                  [style]="{'width': '100%'}"></p-dropdown>
+                <small class="p-error" *ngIf="actionCtrl.get('type')?.invalid && actionCtrl.get('type')?.touched">
+                  Action type is required
+                </small>
+              </div>
+
+              <!-- Timing Controls -->
+              <div formGroupName="timing" class="p-field p-mb-4 p-mt-4">
+                <h5 class="p-mb-3">Action Timing</h5>
+                <div class="p-d-flex p-ai-center p-mb-3">
+                  <div class="p-field-radiobutton p-mr-4">
+                    <p-radioButton
+                      formControlName="type"
+                      value="immediate"
+                      inputId="timing_immediate_{{i}}">
+                    </p-radioButton>
+                    <label for="timing_immediate_{{i}}" class="p-ml-2">Run immediately when triggered</label>
+                  </div>
+                  <div class="p-field-radiobutton">
+                    <p-radioButton
+                      formControlName="type"
+                      value="scheduled"
+                      inputId="timing_scheduled_{{i}}">
+                    </p-radioButton>
+                    <label for="timing_scheduled_{{i}}" class="p-ml-2">Run after delay or at specific time</label>
+                  </div>
+                </div>
+
+                <!-- Scheduled Options -->
+                <div *ngIf="actionCtrl.get('timing.type')?.value === 'scheduled'" class="p-mt-3 p-mb-3">
+                  <div class="p-grid">
+                    <div class="p-col-6">
+                      <label class="p-mb-2">Delay (minutes after trigger)</label>
+                      <p-inputNumber
+                        formControlName="delay"
+                        [min]="1"
+                        [showButtons]="true"
+                        [style]="{'width': '100%'}">
+                      </p-inputNumber>
+                    </div>
+                    <div class="p-col-6">
+                      <label class="p-mb-2">Or specific date</label>
+                      <p-calendar
+                        formControlName="scheduledTime"
+                        [style]="{'width': '100%'}">
+                      </p-calendar>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Configuration -->
+              <!-- This would be dynamically generated based on action type -->
+              <div formGroupName="config" class="p-field p-mb-3 p-mt-4">
+                <h5 class="p-mb-3">Action Configuration</h5>
+
+                <div *ngIf="actionCtrl.get('type')?.value === 'EMAIL'" class="p-card p-p-3">
+                  <div class="p-field p-mb-3">
+                    <label class="p-d-block p-mb-2">Subject</label>
+                    <input type="text" pInputText placeholder="Email subject" [style]="{'width': '100%'}">
+                  </div>
+                  <div class="p-field">
+                    <label class="p-d-block p-mb-2">Message</label>
+                    <textarea pInputTextarea placeholder="Email body" [rows]="3" [style]="{'width': '100%'}"></textarea>
+                  </div>
+                </div>
+
+                <div *ngIf="actionCtrl.get('type')?.value === 'SLACK'" class="p-card p-p-3">
+                  <div class="p-field p-mb-3">
+                    <label class="p-d-block p-mb-2">Channel</label>
+                    <input type="text" pInputText placeholder="Slack channel" [style]="{'width': '100%'}">
+                  </div>
+                  <div class="p-field">
+                    <label class="p-d-block p-mb-2">Message</label>
+                    <textarea pInputTextarea placeholder="Slack message" [rows]="3" [style]="{'width': '100%'}"></textarea>
+                  </div>
+                </div>
+
+                <div *ngIf="actionCtrl.get('type')?.value === 'NOTIFICATION'" class="p-card p-p-3">
+                  <div class="p-field p-mb-3">
+                    <label class="p-d-block p-mb-2">Title</label>
+                    <input type="text" pInputText placeholder="Notification title" [style]="{'width': '100%'}">
+                  </div>
+                  <div class="p-field">
+                    <label class="p-d-block p-mb-2">Message</label>
+                    <textarea pInputTextarea placeholder="Notification message" [rows]="3" [style]="{'width': '100%'}"></textarea>
+                  </div>
+                </div>
+
+                <div *ngIf="actionCtrl.get('type')?.value === 'TASK'" class="p-card p-p-3">
+                  <div class="p-field p-mb-3">
+                    <label class="p-d-block p-mb-2">Title</label>
+                    <input type="text" pInputText placeholder="Task title" [style]="{'width': '100%'}">
+                  </div>
+                  <div class="p-field p-mb-3">
+                    <label class="p-d-block p-mb-2">Assigned To</label>
+                    <input type="text" pInputText placeholder="Assignee" [style]="{'width': '100%'}">
+                  </div>
+                  <div class="p-field">
+                    <label class="p-d-block p-mb-2">Priority</label>
+                    <p-dropdown [options]="[{label: 'High', value: 'high'}, {label: 'Medium', value: 'medium'}, {label: 'Low', value: 'low'}]"
+                                placeholder="Select priority" [style]="{'width': '100%'}"></p-dropdown>
+                  </div>
+                </div>
+
+                <div *ngIf="actionCtrl.get('type')?.value === 'DEVICE_CONTROL'" class="p-card p-p-3">
+                  <div class="p-field p-mb-3">
+                    <label class="p-d-block p-mb-2">Device ID</label>
+                    <input type="text" pInputText placeholder="Device ID" [style]="{'width': '100%'}">
+                  </div>
+                  <div class="p-field">
+                    <label class="p-d-block p-mb-2">Action</label>
+                    <p-selectButton [options]="[{label: 'Turn ON', value: true}, {label: 'Turn OFF', value: false}]"></p-selectButton>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button
+            pButton
+            type="button"
+            label="Add Another Action"
+            icon="pi pi-plus"
+            class="p-button-secondary p-mt-2 p-mb-4"
+            (click)="addAction()"></button>
+        </div>
+
+        <!-- Active Status -->
+        <div class="p-field p-mb-4">
+          <p-radioButton formControlName="isActive" value="true" label="Activate this rule immediately"></p-radioButton>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="p-d-flex p-jc-end">
+          <button pButton type="submit" label="Save Rule" icon="pi pi-save"></button>
+        </div>
+      </form>
+    </p-card>
+  </div>
+</div>

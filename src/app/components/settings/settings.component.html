@@ -1,0 +1,46 @@
+<!-- src/app/components/settings/settings.component.html -->
+<div class="p-grid">
+  <div class="p-col-12 p-md-8 p-offset-md-2">
+    <p-card header="Settings">
+      <p-toast></p-toast>
+
+      <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()">
+        <h3>OpenAI Integration</h3>
+
+        <div class="p-field p-mb-4">
+          <label for="apiKey">OpenAI API Key</label>
+          <div class="p-inputgroup">
+            <input
+              id="apiKey"
+              type="password"
+              pInputText
+              formControlName="apiKey"
+              placeholder="sk-...">
+            <button
+              pButton
+              type="submit"
+              icon="pi pi-save"
+              label="Save"
+              [disabled]="settingsForm.invalid"></button>
+          </div>
+          <small *ngIf="hasApiKey" class="p-text-success">
+            <i class="pi pi-check"></i> API key is configured
+          </small>
+          <small *ngIf="!hasApiKey" class="p-text-secondary">
+            <i class="pi pi-info-circle"></i> Required for AI-powered rule creation
+          </small>
+          <small class="p-error" *ngIf="settingsForm.get('apiKey')?.invalid && settingsForm.get('apiKey')?.touched">
+            Valid OpenAI API key is required
+          </small>
+        </div>
+
+        <p-divider></p-divider>
+
+        <div class="p-text-center p-mb-3">
+          <p>You can get an API key from <a href="https://platform.openai.com/account/api-keys" target="_blank">OpenAI's website</a></p>
+          <p class="p-text-secondary">Your API key is stored locally in your browser and never sent to our servers</p>
+        </div>
+      </form>
+    </p-card>
+  </div>
+</div>

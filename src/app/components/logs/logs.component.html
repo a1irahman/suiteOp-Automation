@@ -1,0 +1,51 @@
+<!-- src/app/components/logs/logs.component.html -->
+<div class="p-grid">
+  <div class="p-col-12">
+    <p-card header="System Logs">
+      <div class="p-d-flex p-jc-between p-ai-center p-mb-3">
+        <h3 class="p-m-0">Automation Actions Log</h3>
+        <button
+          *ngIf="logs.length > 0"
+          pButton
+          type="button"
+          label="Clear Logs"
+          icon="pi pi-trash"
+          class="p-button-danger"
+          (click)="clearLogs($event)"></button>
+      </div>
+
+      <p-toast></p-toast>
+      <p-confirmPopup></p-confirmPopup>
+
+      <p-table [value]="logs" [paginator]="true" [rows]="15" styleClass="p-datatable-striped">
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 170px">Timestamp</th>
+            <th style="width: 100px">Type</th>
+            <th>Message</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-log>
+          <tr>
+            <td>{{log.timestamp | date:'medium'}}</td>
+            <td>
+              <p-tag [severity]="getSeverity(log.type)" [value]="log.type"></p-tag>
+            </td>
+            <td>{{log.message}}</td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="3" class="p-text-center p-py-5">
+              <div class="p-d-flex p-flex-column p-ai-center">
+                <i class="pi pi-inbox" style="font-size: 3rem; color: #DDD"></i>
+                <h3>No Logs Yet</h3>
+                <p>Log entries will appear here as system actions are performed.</p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+  </div>
+</div>

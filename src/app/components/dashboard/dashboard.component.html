@@ -1,0 +1,71 @@
+<!-- src/app/components/dashboard/dashboard.component.html -->
+<div class="p-grid">
+  <div class="p-col-12">
+    <p-card header="Automation Rules Dashboard">
+      <div class="p-d-flex p-jc-between p-ai-center p-mb-3">
+        <h3 class="p-m-0">Your Automation Rules</h3>
+        <button pButton type="button" label="Create New Rule" icon="pi pi-plus" routerLink="/create-rule"></button>
+      </div>
+
+      <p-toast></p-toast>
+      <p-confirmPopup></p-confirmPopup>
+
+      <p-table [value]="rules" [paginator]="true" [rows]="10" styleClass="p-datatable-striped">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Name</th>
+            <th>Trigger</th>
+            <th>Actions</th>
+            <th style="width: 100px">Status</th>
+            <th style="width: 120px">Created</th>
+            <th style="width: 120px">Controls</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-rule>
+          <tr>
+            <td>{{rule.name}}</td>
+            <td>{{rule.trigger.description}}</td>
+            <td>{{formatTimingDescription(rule)}}</td>
+            <td>
+              <p-tag
+                [severity]="rule.isActive ? 'success' : 'warning'"
+                [value]="rule.isActive ? 'Active' : 'Inactive'">
+              </p-tag>
+            </td>
+            <td>{{rule.createdAt | date:'short'}}</td>
+            <td>
+              <div class="p-d-flex p-jc-center">
+                <button
+                  pButton
+                  [icon]="rule.isActive ? 'pi pi-pause' : 'pi pi-play'"
+                  [class]="rule.isActive ? 'p-button-warning p-button-rounded p-button-sm p-mr-2' : 'p-button-success p-button-rounded p-button-sm p-mr-2'"
+                  [pTooltip]="rule.isActive ? 'Deactivate Rule' : 'Activate Rule'"
+                  (click)="toggleRuleActive(rule)">
+                </button>
+                <button
+                  pButton
+                  icon="pi pi-trash"
+                  class="p-button-danger p-button-rounded p-button-sm"
+                  pTooltip="Delete Rule"
+                  (click)="deleteRule(rule, $event)">
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="6" class="p-text-center p-py-5">
+              <div class="p-d-flex p-flex-column p-ai-center">
+                <i class="pi pi-inbox" style="font-size: 3rem; color: #DDD"></i>
+                <h3>No Rules Yet</h3>
+                <p>Create your first automation rule to get started.</p>
+                <button pButton type="button" label="Create Rule" icon="pi pi-plus" routerLink="/create-rule"></button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+  </div>
+</div>

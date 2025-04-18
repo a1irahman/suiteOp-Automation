@@ -1,0 +1,17 @@
+<!-- src/app/app.component.html -->
+<div class="p-grid p-justify-center">
+  <div class="p-col-12 p-md-10">
+    <header class="p-d-flex p-flex-column p-ai-center p-mt-3 p-mb-4">
+      <h1>{{title}}</h1>
+      <p-tabMenu [model]="menuItems" [activeItem]="menuItems[0]"></p-tabMenu>
+    </header>
+
+    <main>
+      <router-outlet></router-outlet>
+    </main>
+
+    <footer class="p-mt-5 p-mb-3 p-text-center p-text-secondary">
+      <p>Suite OP Automation Hub &copy; 2025</p>
+    </footer>
+  </div>
+</div>
