@@ -27,11 +27,4 @@
       ]
     }
   ],
-  "routes": [
-    {
-      "src": "/suite-op-automation/(.*)\\.js",
-      "headers": { "content-type": "application/javascript" },
-      "continue": true
-    }
-  ]
 }
